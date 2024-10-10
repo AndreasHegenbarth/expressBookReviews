@@ -8,7 +8,7 @@ let books = [
       {"author": "Unknown","title": "Nj\u00e1l's Saga", "reviews": { "1334": "Test Review 3"}, "isbn": "1434" },
        {"author": "Jane Austen","title": "Pride and Prejudice", "reviews": {}, "isbn": "1244" },
        {"author": "Honor\u00e9 de Balzac","title": "Le P\u00e8re Goriot", "reviews": { "isbn": "1334"}, "isbn": "1114" },
-       {"author": "Samuel Beckett","title": "Molloy, Malone Dies, The Unnamable, the trilogy", "reviews": {}, "isbn": "1111" }
+       {"author": "Samuel Beckett","title": "Molloy, Malone Dies, The Unnamable, the trilogy", "reviews": [], "isbn": "1111" }
 ]
 
 module.exports=books;

@@ -52,7 +52,7 @@ regd_users.post("/login", (req,res) => {
     // Generate JWT access token
     let accessToken = jwt.sign({
         data: password
-    }, 'access', { expiresIn: 60 });
+    }, 'access', { expiresIn: 60 * 20 });
 
     // Store access token and username in session
     req.session.authorization = {
@@ -66,56 +66,65 @@ regd_users.post("/login", (req,res) => {
 });
 
 // Add a book review
-regd_users.get("/test", (req, res, next) => {
-  //Write your code here
-  if (req.session.authorization) {
-    let token = req.session.authorization['accessToken'];
-
-    // Verify JWT token
-    jwt.verify(token, "access", (err, user) => {
-        if (!err) {
-            req.user = user;
-            next(); // Proceed to the next middleware
-        } else {
-            return res.status(403).json({ message: "User not authenticated" });
-        }
-    });
-} else {
-    return res.status(403).json({ message: "User not logged in" });
-}
-  return res.status(300).json({message: "Yet to be implemented"});
-});
-
-// Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
   if (req.session.authorization) {
-    let token = req.session.authorization['accessToken'];
+        let token = req.session.authorization['accessToken'];
+        jwt.verify(token, "access", (err, user) => {
+            if (!err) {
+                req.user = user;
+            } else {
+                return res.status(403).json({ message: "User not authenticated" });
+            }
+        });
 
-    // Verify JWT token
-    jwt.verify(token, "access", (err, user) => {
-        if (!err) {
-            req.user = user;
-            next(); // Proceed to the next middleware
+        if (req.body.username) {
+            const book = books.filter((item) => item.isbn === req.params.isbn)[0];
+            if (!book.reviews) {
+                book.reviews = [];
+            }
+            book.reviews.push({
+                username: req.body.username,
+                isbn: req.body.isbn,
+            });
+            console.log(books);
+        }
+    res.send("The Book with the" + (' ') + (req.params.isbn) + " Has been added a review!");
+  }
+});
+
+// Delete a book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    if (req.session.authorization) {
+          let token = req.session.authorization['accessToken'];
+          jwt.verify(token, "access", (err, user) => {
+              if (!err) {
+                  req.user = user;
+              } else {
+                  return res.status(403).json({ message: "User not authenticated" });
+              }
+          });
+  
+          const book = books.filter((item) => item.isbn === req.params.isbn)[0];
+
+            if (book && book.reviews) {
+            const reviewIndex = book.reviews.findIndex((review) => review.username === req.body.username);
+
+            if (reviewIndex !== -1) {
+                book.reviews.splice(reviewIndex, 1);
+                console.log(books);
+                res.send(`The review from ${req.body.username} for ISBN ${req.params.isbn} has been deleted!`
+                );
+            } else {
+                res.status(404).json({ message: "Review not found" });
+            }
+            } else {
+            res.status(404).json({ message: "Book not found" });
+            }
         } else {
             return res.status(403).json({ message: "User not authenticated" });
         }
-    });
-} else {
-    return res.status(403).json({ message: "User not logged in" });
-}
-    if (req.body.review) {
-        // Create or update friend's details based on provided email
-        review[req.body.email] = {
-            "username": req.body.username,
-            "isbn": req.body.isbn,
-        };
-    }
-    // Send response indicating user addition
-    res.send("The user" + (' ') + (req.body.username) + " Has been added a review!");
-});
-
-
+  });
+  
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
